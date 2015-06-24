@@ -103,6 +103,7 @@ var (
 	exitOnComplete bool
 	isStrict       bool
 	useNumber      bool
+	redisDb        string
 )
 
 // Namespace returns the namespace flag for goworker. You
@@ -120,6 +121,8 @@ func init() {
 	flag.IntVar(&concurrency, "concurrency", 25, "the maximum number of concurrently executing jobs")
 
 	flag.IntVar(&connections, "connections", 2, "the maximum number of connections to the Redis database")
+
+	flag.StringVar(&redisDb,"db","0","the redis db selected")
 
 	redisProvider := os.Getenv("REDIS_PROVIDER")
 	var redisEnvUri string

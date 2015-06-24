@@ -6,6 +6,7 @@ import (
 	"github.com/garyburd/redigo/redis"
 	"net/url"
 	"time"
+	"fmt"
 )
 
 var (
@@ -73,6 +74,14 @@ func redisConnFromUri(uriString string) (*RedisConn, error) {
 
 	if db != "" {
 		_, err := conn.Do("SELECT", db)
+		if err != nil {
+			conn.Close()
+			return nil, err
+		}
+	}
+
+	if redisDb != "" {
+		_, err := conn.Do("SELECT", redisDb)
 		if err != nil {
 			conn.Close()
 			return nil, err
