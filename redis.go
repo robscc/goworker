@@ -6,7 +6,6 @@ import (
 	"github.com/garyburd/redigo/redis"
 	"net/url"
 	"time"
-	"fmt"
 )
 
 var (
