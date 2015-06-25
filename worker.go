@@ -52,12 +52,12 @@ func (w *Worker) start(conn *RedisConn, job *Job) error {
 	return w.process.start(conn)
 }
 
-func (w *Worker) fail(conn *RedisConn, job *Job, err error) error {
+func (w *Worker) fail(conn *RedisConn, job *Job, runerr error) error {
 	failure := &failure{
 		FailedAt:  time.Now(),
 		Payload:   job.Payload,
 		Exception: "Error",
-		Error:     err.Error(),
+		Error:     runerr.Error(),
 		Worker:    w,
 		Queue:     job.Queue,
 	}
@@ -66,6 +66,7 @@ func (w *Worker) fail(conn *RedisConn, job *Job, err error) error {
 		return err
 	}
 	conn.Send("RPUSH", fmt.Sprintf("%sfailed", namespace), buffer)
+	logger.Infof("Fail %s with arguments(%v) by reason(%v)", job.Payload.Class,job.Payload.Args,runerr.Error())
 
 	return w.process.fail(conn)
 }
@@ -73,6 +74,7 @@ func (w *Worker) fail(conn *RedisConn, job *Job, err error) error {
 func (w *Worker) succeed(conn *RedisConn, job *Job) error {
 	conn.Send("INCR", fmt.Sprintf("%sstat:processed", namespace))
 	conn.Send("INCR", fmt.Sprintf("%sstat:processed:%s", namespace, w))
+	logger.Infof("Success %s with arguments(%v)", job.Payload.Class,job.Payload.Args)
 
 	return nil
 }
