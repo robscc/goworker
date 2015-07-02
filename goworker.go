@@ -10,11 +10,32 @@ import (
 	"time"
 )
 
+type LoggerInterface interface {
+	Tracef(format string, params ...interface{})
+	Debugf(format string, params ...interface{})
+	Infof(format string, params ...interface{})
+	Warnf(format string, params ...interface{}) error
+	Errorf(format string, params ...interface{}) error
+	Criticalf(format string, params ...interface{}) error
+	Trace(v ...interface{})
+	Debug(v ...interface{})
+	Info(v ...interface{})
+	Warn(v ...interface{}) error
+	Error(v ...interface{}) error
+	Critical(v ...interface{}) error
+}
+
+
 var (
-	logger seelog.LoggerInterface
+	logger LoggerInterface
 	pool   *pools.ResourcePool
 	ctx    context.Context
 )
+
+//Set Logger
+func SetLogger(_logger LoggerInterface) {
+	logger = _logger
+}
 
 // Init initializes the goworker process. This will be
 // called by the Work function, but may be used by programs
@@ -22,7 +43,9 @@ var (
 // without actually processing jobs.
 func Init() error {
 	var err error
-	logger, err = seelog.LoggerFromWriterWithMinLevel(os.Stdout, seelog.InfoLvl)
+	if logger == nil {
+		logger, err = seelog.LoggerFromWriterWithMinLevel(os.Stdout, seelog.InfoLvl)
+	}
 	if err != nil {
 		return err
 	}
