@@ -135,7 +135,7 @@ func (w *Worker) work(jobs <-chan *Job, monitor *sync.WaitGroup) {
 	}()
 }
 
-func (w *Worker) run(job *Job, workerFunc workerFunc) {
+func (w *Worker) run(job *Job, workerFunc WorkerFunc) {
 	var err error
 	defer func() {
 		conn, errCon := GetConn()
