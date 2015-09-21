@@ -37,6 +37,11 @@ func SetLogger(_logger LoggerInterface) {
 	logger = _logger
 }
 
+//Set RedisUri
+func SetRedisUri(_uri string) {
+	uri = _uri
+}
+
 // Init initializes the goworker process. This will be
 // called by the Work function, but may be used by programs
 // that wish to access goworker functions and configuration

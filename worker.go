@@ -31,7 +31,7 @@ func (w *Worker) RetryJob(job *Job) error {
 	if err != nil {
 		return err
 	}
-	return w.process.repush(conn,job)
+	return w.process.repush(conn, job)
 }
 
 func (w *Worker) start(conn *RedisConn, job *Job) error {
@@ -66,7 +66,7 @@ func (w *Worker) fail(conn *RedisConn, job *Job, runerr error) error {
 		return err
 	}
 	conn.Send("RPUSH", fmt.Sprintf("%sfailed", namespace), buffer)
-	logger.Infof("Fail %s with arguments(%v) by reason(%v)", job.Payload.Class,job.Payload.Args,runerr.Error())
+	logger.Infof("Fail %s with arguments(%v) by reason(%v)", job.Payload.Class, job.Payload.Args, runerr.Error())
 
 	return w.process.fail(conn)
 }
@@ -74,7 +74,7 @@ func (w *Worker) fail(conn *RedisConn, job *Job, runerr error) error {
 func (w *Worker) succeed(conn *RedisConn, job *Job) error {
 	conn.Send("INCR", fmt.Sprintf("%sstat:processed", namespace))
 	conn.Send("INCR", fmt.Sprintf("%sstat:processed:%s", namespace, w))
-	logger.Infof("Success %s with arguments(%v)", job.Payload.Class,job.Payload.Args)
+	logger.Infof("Success %s with arguments(%v)", job.Payload.Class, job.Payload.Args)
 
 	return nil
 }
@@ -135,8 +135,10 @@ func (w *Worker) work(jobs <-chan *Job, monitor *sync.WaitGroup) {
 	}()
 }
 
-func (w *Worker) run(job *Job, workerFunc WorkerFunc) {
+func (w *Worker) run(job *Job, wrapWorkerFunc WrapWorkerFunc) {
 	var err error
+	workerFunc := wrapWorkerFunc.Worker
+	opt := wrapWorkerFunc.Opt
 	defer func() {
 		conn, errCon := GetConn()
 		if errCon != nil {
@@ -162,5 +164,12 @@ func (w *Worker) run(job *Job, workerFunc WorkerFunc) {
 		PutConn(conn)
 	}
 	//err = workerFunc(job.Queue, job.Payload.Args...)
-	err = workerFunc(w, job)
+	if opt.FailRecord {
+		logger.Debug("fail record")
+		err = workerFunc(w, job)
+	} else {
+		logger.Debug("fail not record")
+		workerFunc(w, job)
+		err = nil
+	}
 }

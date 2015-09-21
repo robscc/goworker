@@ -132,7 +132,11 @@ func init() {
 		redisEnvUri = os.Getenv("REDIS_URL")
 	}
 	if redisEnvUri == "" {
-		redisEnvUri = "redis://localhost:6379/"
+		if uri == "" {
+			redisEnvUri = "redis://localhost:6379/"
+		} else {
+			redisEnvUri = uri
+		}
 	}
 	flag.StringVar(&uri, "uri", redisEnvUri, "the URI of the Redis server")
 
